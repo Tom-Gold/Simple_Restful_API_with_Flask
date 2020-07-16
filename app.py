@@ -272,4 +272,4 @@ trans_schema = TransactionSchema()
 transactions_schema = TransactionSchema(many=True)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
