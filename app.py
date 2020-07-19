@@ -1,10 +1,9 @@
 from flask import Flask, jsonify, request, session
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, Integer, String
 import os
 from flask_marshmallow import Marshmallow
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
-
+from models import *
 
 app = Flask(__name__)
 
@@ -106,7 +105,6 @@ def login():
     else:
         return jsonify(message="Bad email or password"), 401
 
-
 # Write message
 @app.route('/add_msg', methods=['POST'])
 @jwt_required
@@ -142,7 +140,6 @@ def add_msg():
 
     return jsonify(message="You added a message"), 201
 
-
 # Get all messages for a specific user
 @app.route('/get_messages', methods=["GET"])
 @jwt_required
@@ -164,7 +161,6 @@ def get_messages():
         return jsonify(msgs_schema.dump(messages_result))
     else:
         return jsonify('No Messages for user: ' + session.get('email')), 404
-
 
 # Get all unread messages for a specific user
 @app.route('/get_new_messages', methods=["GET"])
@@ -204,7 +200,6 @@ def get_message():
     else:
         return jsonify('No Messages for user: ' + session.get('email')), 404
 
-
 # Delete message (as owner or as receiver)
 @app.route('/remove_message/<int:msg_id>', methods=['DELETE'])
 @jwt_required
@@ -220,56 +215,5 @@ def remove_message(msg_id: int):
         return jsonify(message="That message does not exist"), 404
 
 
-# database models
-class User(db.Model):
-    __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
-    first_name = Column(String)
-    last_name = Column(String)
-    email = Column(String, unique=True)
-    password = Column(String)
-
-
-class Msg(db.Model):
-    __tablename__ = 'messages'
-    id = Column(Integer, primary_key=True)
-    msg_subject = Column(String)
-    msg_content = Column(String)
-    msg_creation_date = Column(String)
-
-
-class Transaction(db.Model):
-    __tablename__ = 'transactions'
-    id = Column(Integer, primary_key=True)
-    msg_from = Column(Integer)
-    msg_to = Column(Integer)
-    msg_index = Column(Integer)
-    msg_read = Column(Integer)
-
-
-class UserSchema(ma.Schema):
-    class Meta:
-        fields = ('id', 'first_name', 'last_name', 'email', 'password')
-
-
-class MsgSchema(ma.Schema):
-    class Meta:
-        fields = ('msg_id', 'msg_subject', 'msg_content', 'msg_creation_date')
-
-
-class TransactionSchema(ma.Schema):
-    class Meta:
-        fields = ('trans_id', 'msg_from', 'msg_to', 'msg_index', 'msg_read')
-
-
-user_schema = UserSchema()
-users_schema = UserSchema(many=True)
-
-msg_schema = MsgSchema()
-msgs_schema = MsgSchema(many=True)
-
-trans_schema = TransactionSchema()
-transactions_schema = TransactionSchema(many=True)
-
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
